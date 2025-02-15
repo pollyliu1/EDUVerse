@@ -1,0 +1,6 @@
+lxml==5.3.1
+pdf2image==1.17.0
+pillow==11.1.0
+python-pptx==1.0.2
+typing_extensions==4.12.2
+XlsxWriter==3.2.2
