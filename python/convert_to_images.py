@@ -53,7 +53,7 @@ def convert_google_slides_to_images(slide_id, output_folder):
 def main():
     parser = argparse.ArgumentParser(description="Convert documents to images.")
     parser.add_argument('input_file', help='Path to the input file or Google Slides ID')
-    parser.add_argument('output_folder', help='Folder to save the images')
+    parser.add_argument('output_folder', nargs='?', default='/outputs', help='Folder to save the images')  # Set default to /outputs
     parser.add_argument('--type', choices=['pdf', 'pptx', 'key', 'gslides'], required=True, help='Type of the input file')
 
     args = parser.parse_args()

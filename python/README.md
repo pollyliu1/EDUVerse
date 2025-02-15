@@ -7,9 +7,9 @@ This project provides a command-line interface (CLI) tool to convert documents s
 First, ensure you have Python installed. Then, install the required packages:
 
 ```bash
-python python/convert_to_images.py <input_file> <output_folder> --type <file_type>
+python python/convert_to_images.py <input_file> [<output_folder>] --type <file_type>
 - `<input_file>`: Path to the input file (e.g., PDF, PPTX, Keynote, Google Slides)
-- `<output_folder>`: Path to the output folder where images will be saved
+- `<output_folder>`: Path to the output folder where images will be saved (default is `/outputs`)
 - `<file_type>`: Type of the input file (e.g., pdf, pptx, key, slide)
 ```
 
@@ -38,3 +38,5 @@ Convert a Google Slides to images:
 ```bash
 python python/convert_to_images.py example.slide output_folder --type slide
 ```
+
+If you do not specify an `output_folder`, the images will be saved in the `/outputs` directory by default.
