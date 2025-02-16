@@ -65,7 +65,7 @@ export async function startRecording() {
 
     // TRANSCRIBES THE AUDIO INTO TEXT
 
-    const index = 1;
+    const index = game.slideLoader.getCurrentSlide();
     const filePath = `images/textbook/complex-numbers-${index}.png`;
     fetch(filePath)
       .then((response) => response.blob())

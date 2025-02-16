@@ -12,6 +12,12 @@ export default class SlideLoader {
 
   constructor(readonly scene: ThreeScene) {}
 
+  getCurrentSlide(): number {
+    const index = Math.floor(this.slides.position.y / 1.414);
+    // clamp between 1 and 5
+    return Math.max(1, Math.min(5, index));
+  }
+
   loadSlides() {
     const NUM_SLIDES = 5;
     const promises = [];
