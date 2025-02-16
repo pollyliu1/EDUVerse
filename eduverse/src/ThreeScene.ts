@@ -3,6 +3,7 @@ import { VRButton } from "three/addons/webxr/VRButton.js";
 import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from "three/addons/webxr/XRHandModelFactory.js";
 import { OculusHandModel } from "three/addons/webxr/OculusHandModel.js";
+// import { World, System, Component, TagComponent, Types } from "three/addons/libs/ecsy.module.js";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -48,6 +49,9 @@ class ThreeScene {
 
     // Initialize controller and hand models with OculusHandModel
     this.loadOculusHandModels();
+
+    // Create draggable cubes
+    this.createDraggableCubes();
   }
 
   async init() {
@@ -64,13 +68,26 @@ class ThreeScene {
       })
     );
 
+    // setup objects in scene and entities
+    const floorGeometry = new THREE.PlaneGeometry(4, 4);
+    const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    this.scene.add(floor);
+
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     this.scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 0.5);
-    pointLight.position.set(10, 10, 10);
-    this.scene.add(pointLight);
+    // add a directional light that points downwards
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 0);
+    this.scene.add(directionalLight);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.set(1024, 1024);
+    directionalLight.shadow.camera.far = 15;
+    directionalLight.shadow.camera.near = 5;
 
     // Handle window resize
     window.addEventListener("resize", this.onWindowResize.bind(this));
@@ -104,12 +121,11 @@ class ThreeScene {
           const wrist = inputSource.hand.get("wrist");
           if (wrist) {
             const position = new THREE.Vector3();
-            // const quaternion = new THREE.Quaternion();
-            // const scale = new THREE.Vector3();
+            // Use the transform matrix from XRJointSpace
             // const transform = wrist.transform;
             // const matrix = new THREE.Matrix4().fromArray(transform.matrix);
-            // matrix.decompose(position, quaternion, scale);
-            console.log(`Wrist position (${handedness}): x=${position.x}, y=${position.y}, z=${position.z}`);
+            // matrix.decompose(position, new THREE.Quaternion(), new THREE.Vector3());
+            // console.log(`Wrist position (${handedness}): x=${position.x}, y=${position.y}, z=${position.z}`);
 
             if (handedness === "left") {
               this.handPositions.left = position;
@@ -123,8 +139,6 @@ class ThreeScene {
           console.log("No hand data available for this input source.");
         }
       });
-    } else {
-      console.log("No XR session available.");
     }
   }
 
@@ -152,6 +166,23 @@ class ThreeScene {
     this.hand2 = this.renderer.xr.getHand(1);
     this.hand2.add(new OculusHandModel(this.hand2));
     this.scene.add(this.hand2);
+  }
+
+  createDraggableCubes() {
+    const cubePositions = [new THREE.Vector3(-1, 0.5, -2), new THREE.Vector3(0, 0.5, -2), new THREE.Vector3(1, 0.5, -2)];
+
+    cubePositions.forEach((position) => {
+      const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+      const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      cube.position.copy(position);
+      this.scene.add(cube);
+
+      // const entity = world.createEntity();
+      // entity.addComponent(Intersectable);
+      // entity.addComponent(Draggable);
+      // entity.addComponent(Object3D, { object: cube });
+    });
   }
 }
 
