@@ -69,11 +69,11 @@ export async function startRecording() {
     // TRANSCRIBES THE AUDIO INTO TEXT
 
     const index = game.slideLoader.getCurrentSlide();
-    const filePath = `images/textbook/complex-numbers-${index}.png`;
+    const filePath = `images/textbook/notes-${index}.png`;
     fetch(filePath)
       .then((response) => response.blob())
       .then((blob) => {
-        const file = new File([blob], `complex-numbers-${index}.png`, { type: "image/png" });
+        const file = new File([blob], `notes-${index}.png`, { type: "image/png" });
         Services.sendAgentRequest(file, audioBlob);
       })
       .then((text) => console.log("Extracted Text:", text))
