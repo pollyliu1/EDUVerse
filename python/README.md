@@ -56,3 +56,14 @@ It can automatically detect the file type if you do not specify the file type.
 ```bash
 python convert_to_images.py examples/waterloo-strat-plan-2019-2023.pdf
 ```
+
+```bash
+python convert_to_images.py examples/slide.pptx
+```
+
+### Clean Up
+Clear output folder for testing:
+```bash
+python3 clear_outputs.py
+```
+
