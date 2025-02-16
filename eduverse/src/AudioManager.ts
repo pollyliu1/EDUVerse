@@ -1,5 +1,6 @@
 import { game } from "./main";
 import { Howl } from "howler";
+import Services from "./Services";
 
 export async function getMicrophoneStream() {
   try {
@@ -12,6 +13,7 @@ export async function getMicrophoneStream() {
 }
 
 export async function startRecording() {
+  console.log("start");
   const videoStream = game.scene.renderer.domElement.captureStream(30); // Capture WebGL output
   const audioStream = await getMicrophoneStream(); // Capture Oculus mic
 
@@ -48,16 +50,19 @@ export async function startRecording() {
     videoElement.autoplay = true;
     document.body.appendChild(videoElement);
 
-    // Use Howler to play the audio
-    // const audioUrl = URL.createObjectURL(blob);
-    // const sound = new Howl({
-    //   src: [audioUrl],
-    //   format: ["webm"],
-    //   autoplay: true,
-    //   onend: () => {
-    //     URL.revokeObjectURL(audioUrl); // Clean up the URL after use
-    //   },
-    // });
+    // PLAY BACK THE MIC AUDIO
+    const audioUrl = URL.createObjectURL(blob);
+    const sound = new Howl({
+      src: [audioUrl],
+      format: ["webm"],
+      autoplay: true,
+      onend: () => {
+        URL.revokeObjectURL(audioUrl); // Clean up the URL after use
+      },
+    });
+
+    // TRANSCRIBES THE AUDIO INTO TEXT
+    Services.uploadAudio(blob);
   };
 
   mediaRecorder.start();

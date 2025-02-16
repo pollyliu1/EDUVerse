@@ -47,9 +47,9 @@ class Game {
   }
 
   startRecording() {
-    // startRecording().then((recorder) => {
-    //   this.mediaRecorder = recorder;
-    // });
+    startRecording().then((recorder) => {
+      this.mediaRecorder = recorder;
+    });
   }
 
   stopRecording() {

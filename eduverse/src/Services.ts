@@ -20,4 +20,22 @@ export default class Services {
       throw error;
     }
   }
+
+  static uploadAudio(blob: Blob) {
+    const formData = new FormData();
+    formData.append("file", blob, "recording.wav");
+    formData.append("provider", "groq");
+
+    fetch("http://127.0.0.1:8000/transcribe", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Transcript:", data.transcript);
+      })
+      .catch((error) => {
+        console.error("Failed to upload audio:", error);
+      });
+  }
 }
