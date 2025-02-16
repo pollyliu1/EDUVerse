@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { World } from "three/addons/libs/ecsy.module.js";
 import { OculusHandModel } from "three/addons/webxr/OculusHandModel.js";
+import { OculusHandPointerModel } from "three/addons/webxr/OculusHandPointerModel.js";
+import { createText } from "three/addons/webxr/Text2D.js";
 import { VRButton } from "three/addons/webxr/VRButton.js";
 import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from "three/addons/webxr/XRHandModelFactory.js";
@@ -20,8 +22,7 @@ import {
   Randomizable,
   RandomizerSystem,
 } from "./dragger";
-import { createText } from "three/addons/webxr/Text2D.js";
-import { OculusHandPointerModel } from "three/addons/webxr/OculusHandPointerModel.js";
+import { loadPDF } from "./pdf";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -152,6 +153,12 @@ class ThreeScene {
     const instructionText = createText("This is a WebXR Hands demo, please explore with hands.", 0.04);
     instructionText.position.set(0, 1.6, -0.6);
     this.scene.add(instructionText);
+
+    loadPDF("https://arxiv.org/pdf/2302.03803.pdf").then((pdfMesh) => {
+      pdfMesh.position.set(0, 1, -1);
+      pdfMesh.rotation.y = -Math.PI / 12;
+      this.scene.add(pdfMesh);
+    });
 
     const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
     const menuMaterial = new THREE.MeshPhongMaterial({
