@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from pydantic import BaseModel
 import openai
 import os
 from dotenv import load_dotenv
 from groq import Groq
+import io
 
 load_dotenv('../.env')
 
@@ -59,3 +60,29 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
     
 
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
+    try:
+        # Read the uploaded file
+        audio_bytes = await file.read()
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = file.filename  # Whisper requires the file to have a name attribute
+
+        # Transcribe audio using OpenAI's Whisper
+        if provider == "groq":
+
+            transcript = groq_client.audio.transcriptions.create(
+                model="whisper-large-v3-turbo",
+                file=(audio_file.name, audio_file),
+                response_format="json",
+                language="en"
+            )
+            return {"transcript": transcript.text}
+        else:
+            transcript = openai_client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+            )
+            return {"transcript": transcript["text"].strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

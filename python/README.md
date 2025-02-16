@@ -99,3 +99,14 @@ Groq:
 ```bash
 curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d '{"prompt": "Whats the capital of France?", "llm": "groq"}'
 ```
+
+## Transcribe
+
+```bash
+curl -X POST "http://127.0.0.1:8000/transcribe" \
+     -H "Content-Type: multipart/form-data" \
+     -F "file=@examples/harvard.wav" \
+     -F "provider=groq"
+```
+
+You can also use "openai" as the provider.
