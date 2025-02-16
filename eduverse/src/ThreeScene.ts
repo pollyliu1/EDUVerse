@@ -22,6 +22,7 @@ import {
   Randomizable,
   RandomizerSystem,
 } from "./dragger";
+import { game } from "./main";
 import { loadPDF } from "./pdf";
 
 interface HandPosition {
@@ -99,6 +100,8 @@ class ThreeScene {
   hand2: THREE.Group;
   handPointer1: OculusHandPointerModel;
   handPointer2: OculusHandPointerModel;
+  handModel1: OculusHandModel;
+  handModel2: OculusHandModel;
 
   // Factories for controller and hand models
   controllerModelFactory: XRControllerModelFactory;
@@ -109,9 +112,17 @@ class ThreeScene {
 
   cubes: Cube[] = [];
 
+  onSelectStart() {
+    game.isSelecting = true;
+  }
+
+  onSelectEnd() {
+    game.isSelecting = false;
+  }
+
   constructor() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10);
+    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 20);
     this.camera.position.set(0, 1.2, 0.3);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -129,21 +140,13 @@ class ThreeScene {
     this.scene.add(this.controller2);
 
     // add event listeners for controller and hand models
-    this.controller1.addEventListener("selectstart", () => {
-      console.log("controller 1 selected");
-    });
+    this.controller1.addEventListener("selectstart", this.onSelectStart);
 
-    this.controller2.addEventListener("selectstart", () => {
-      console.log("controller 2 selected");
-    });
+    this.controller2.addEventListener("selectstart", this.onSelectStart);
 
-    this.controller1.addEventListener("selectend", () => {
-      console.log("controller 1 selected end");
-    });
+    this.controller1.addEventListener("selectend", this.onSelectEnd);
 
-    this.controller2.addEventListener("selectend", () => {
-      console.log("controller 2 selected end");
-    });
+    this.controller2.addEventListener("selectend", this.onSelectEnd);
 
     // Initialize controller and hand models with OculusHandModel
     this.loadOculusHandModels();
@@ -153,12 +156,6 @@ class ThreeScene {
     const instructionText = createText("This is a WebXR Hands demo, please explore with hands.", 0.04);
     instructionText.position.set(0, 1.6, -0.6);
     this.scene.add(instructionText);
-
-    loadPDF("https://arxiv.org/pdf/2302.03803.pdf").then((pdfMesh) => {
-      pdfMesh.position.set(0, 1, -1);
-      pdfMesh.rotation.y = -Math.PI / 12;
-      this.scene.add(pdfMesh);
-    });
 
     const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
     const menuMaterial = new THREE.MeshPhongMaterial({
@@ -299,37 +296,17 @@ class ThreeScene {
   }
 
   updateHands() {
-    const session = this.renderer.xr.getSession();
-    if (session) {
-      const inputSources = session.inputSources;
-      inputSources.forEach((inputSource) => {
-        if (inputSource.hand) {
-          const handedness = inputSource.handedness;
-          console.log(`Hand detected: ${handedness}`);
+    const hand1 = this.renderer.xr.getHand(0);
+    const hand2 = this.renderer.xr.getHand(1);
 
-          // Access the wrist joint as an example
-          const wrist = inputSource.hand.get("wrist");
-          if (wrist) {
-            const position = new THREE.Vector3();
-            // Use the transform matrix from XRJointSpace
-            // const transform = wrist.transform;
-            // const matrix = new THREE.Matrix4().fromArray(transform.matrix);
-            // matrix.decompose(position, new THREE.Quaternion(), new THREE.Vector3());
-            // console.log(`Wrist position (${handedness}): x=${position.x}, y=${position.y}, z=${position.z}`);
+    const hand1Joints = hand1.joints;
+    const hand2Joints = hand2.joints;
 
-            if (handedness === "left") {
-              this.handPositions.left = position;
-            } else if (handedness === "right") {
-              this.handPositions.right = position;
-            }
-          } else {
-            console.log(`Wrist joint not found for ${handedness} hand.`);
-          }
-        } else {
-          console.log("No hand data available for this input source.");
-        }
-      });
-    }
+    const index1 = hand1Joints["index-finger-tip"];
+    const index2 = hand2Joints["index-finger-tip"];
+
+    this.handPositions.left = index1?.position;
+    this.handPositions.right = index2?.position;
   }
 
   getHandPositions(): HandPosition {
@@ -345,7 +322,8 @@ class ThreeScene {
     this.scene.add(this.controllerGrip1);
 
     this.hand1 = this.renderer.xr.getHand(0);
-    this.hand1.add(new OculusHandModel(this.hand1));
+    this.handModel1 = new OculusHandModel(this.hand1);
+    this.hand1.add(this.handModel1);
     this.scene.add(this.hand1);
 
     const hand1 = this.renderer.xr.getHand(0);
@@ -358,7 +336,8 @@ class ThreeScene {
     this.scene.add(this.controllerGrip2);
 
     this.hand2 = this.renderer.xr.getHand(1);
-    this.hand2.add(new OculusHandModel(this.hand2));
+    this.handModel2 = new OculusHandModel(this.hand2);
+    this.hand2.add(this.handModel2);
     this.scene.add(this.hand2);
 
     const hand2 = this.renderer.xr.getHand(1);

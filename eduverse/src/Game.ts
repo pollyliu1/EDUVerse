@@ -13,10 +13,30 @@ class Game {
   aiLoader: AILoader;
   slideLoader: SlideLoader;
 
+  isSelecting = false;
+
+  mouse = {
+    x: 0,
+    y: 0,
+  };
+
   constructor() {
     this.scene = new ThreeScene();
     this.aiLoader = new AILoader(this.scene);
     this.slideLoader = new SlideLoader(this.scene);
+
+    document.addEventListener("mousemove", (event) => {
+      this.mouse.x = event.clientX;
+      this.mouse.y = event.clientY;
+    });
+
+    document.addEventListener("mousedown", () => {
+      this.isSelecting = true;
+    });
+
+    document.addEventListener("mouseup", () => {
+      this.isSelecting = false;
+    });
   }
 
   init() {

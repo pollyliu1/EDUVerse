@@ -9,7 +9,7 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>
 );
 
-const game = new Game();
+export const game = new Game();
 game.init();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

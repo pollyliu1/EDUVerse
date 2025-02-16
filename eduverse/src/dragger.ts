@@ -128,7 +128,7 @@ export class HandRaySystem extends System {
             }
           } else {
             if (hp.isAttached() && draggable.state == "attached") {
-              console.log("hello");
+              console.log("object is now attached");
               draggable.state = "to-be-detached";
               draggable.attachedPointer = null;
               hp.setAttached(false);
