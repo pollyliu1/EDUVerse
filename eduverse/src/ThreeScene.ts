@@ -269,9 +269,9 @@ class ThreeScene {
 
     this.renderer.render(this.scene, this.camera);
 
-    this.cubes.forEach((cube) => {
-      cube.update(delta, elapsedTime);
-    });
+    // this.cubes.forEach((cube) => {
+    //   cube.update();
+    // });
   }
 
   updateHands() {
