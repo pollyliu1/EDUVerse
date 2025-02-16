@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@dimforge/rapier3d": "^0.14.0",
+    "axios": "^1.7.9",
     "howler": "^2.2.4",
     "pdfjs-dist": "^4.10.38",
     "react": "^19.0.0",

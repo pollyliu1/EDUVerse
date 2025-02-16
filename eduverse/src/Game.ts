@@ -3,6 +3,7 @@ import AILoader from "./AILoader";
 import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
 import { getMicrophoneStream, startRecording, stopRecording } from "./AudioManager";
+import Services from "./Services";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -73,6 +74,18 @@ class Game {
 
   getHandPositions(): HandPosition {
     return this.scene.getHandPositions();
+  }
+
+  sendImageToAI(index = 0) {
+    const filePath = `images/textbook/complex-numbers-${index}.png`;
+    fetch(filePath)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const file = new File([blob], `complex-numbers-${index}.png`, { type: "image/png" });
+        return Services.getTextFromImage(file, "What is the text in the image?");
+      })
+      .then((text) => console.log("Extracted Text:", text))
+      .catch((error) => console.error("Failed to extract text:", error));
   }
 }
 
