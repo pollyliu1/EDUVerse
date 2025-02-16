@@ -21,8 +21,12 @@ export default class AILoader {
       duck.rotation.y = 8;
       this.duck = duck;
       
-      // Add directly to the scene
       this.scene.scene.add(duck);
     });
+  }
+
+  animate() {
+    this.duck.position.y = 1.5 + Math.sin(Date.now() * 0.001) * 0.1;
+    this.duck.rotation.y += 0.01;
   }
 }
