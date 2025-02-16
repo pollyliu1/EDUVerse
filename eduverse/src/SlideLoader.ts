@@ -34,7 +34,7 @@ export default class SlideLoader {
     const geometry = new THREE.PlaneGeometry(5, 3);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const imagePlane = new THREE.Mesh(geometry, material);
-    imagePlane.position.set(0, 0, -10);
+    imagePlane.position.set(0, 0, -5);
     this.slides.push(imagePlane);
     this.scene.scene.add(imagePlane);
   }
