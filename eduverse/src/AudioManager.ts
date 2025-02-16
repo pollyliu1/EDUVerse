@@ -12,6 +12,8 @@ export async function getMicrophoneStream() {
   }
 }
 
+let currentHowl: Howl | null = null;
+
 export async function startRecording() {
   console.log("start");
   // const videoStream = game.scene.renderer.domElement.captureStream(30); // Capture WebGL output
@@ -54,7 +56,8 @@ export async function startRecording() {
 
     // PLAY BACK THE MIC AUDIO
     const audioUrl = URL.createObjectURL(audioBlob);
-    const sound = new Howl({
+    currentHowl?.stop();
+    currentHowl = new Howl({
       src: [audioUrl],
       format: ["webm"],
       autoplay: true,
