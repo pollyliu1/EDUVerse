@@ -37,7 +37,7 @@ class ChatRequest(BaseModel):
 class GenerateSpeechRequest(BaseModel):
     input: str
     stream: bool = True
-    voice_id: str = "qDazFCguyJ6M5CH0mFuN" # 3blue1brown
+    voice_id: str = "qDazFCguyJ6M5CH0mFuN" # 3blue1brown voice id
 
 class ImageRequest(BaseModel):
     prompt: str = "Describe the content of this image."
@@ -80,15 +80,13 @@ async def chat(request: ChatRequest):
     
 
 # -------------------------------------- Speech --------------------------------------
-@app.post("/transcribe")
-async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
+def transcribe_audio(file: UploadFile, provider: str = "groq"):
     try:
-        audio_bytes = await file.read()
+        audio_bytes = file.file.read() # await?
         audio_file = io.BytesIO(audio_bytes)
-        audio_file.name = file.filename  
+        audio_file.name = file.filename
 
         if provider == "groq":
-
             transcript = groq_client.audio.transcriptions.create(
                 model="whisper-large-v3-turbo",
                 file=(audio_file.name, audio_file),
@@ -104,39 +102,46 @@ async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
             return {"transcript": transcript["text"].strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
 
+# API endpoint that calls the transcription function
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
+    return transcribe_audio(file, provider)
+
+
+def generate_speech_audio(input: str, voice_id: str = "qDazFCguyJ6M5CH0mFuN", stream: bool = True):
+    try:
+        if not stream:  # currently only supports streaming
+            response = eleven_labs_client.text_to_speech.convert(
+                text=input,
+                voice_id=voice_id,
+                model_id="eleven_turbo_v2_5",
+                output_format="mp3_44100_128",
+            )
+
+            audio_data = io.BytesIO()
+            for chunk in response:
+                audio_data.write(chunk)
+            audio_data.seek(0)
+            audio_data.name = "output.mp3"
+            return StreamingResponse(audio_data, media_type="audio/mpeg", headers={"Content-Disposition": "attachment; filename=output.mp3"})
+        else:
+            audio_stream = eleven_labs_client.text_to_speech.convert_as_stream(
+                text=input,
+                voice_id=voice_id,
+                model_id="eleven_turbo_v2_5",
+                output_format="mp3_44100_128",
+            )
+
+            return audio_stream
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# API endpoint that calls the speech generation function
 @app.post("/generate_speech")
 async def generate_speech(request: GenerateSpeechRequest):
-    if not request.stream: # currently only supports streaming
-        response = eleven_labs_client.text_to_speech.convert(
-            text=request.input,
-            # grant's voice (3blue1brown)
-            voice_id=request.voice_id,
-            # voice_id="JBFqnCBsd6RMkjVDRZzb",
-            # model_id="eleven_multilingual_v2",
-            model_id="eleven_turbo_v2_5",
-                output_format="mp3_44100_128",
-        )
-
-        audio_data = io.BytesIO()
-        for chunk in response:
-            audio_data.write(chunk)        
-        audio_data.seek(0)
-        audio_data.name = "output.mp3"
-        return StreamingResponse(audio_data, media_type="audio/mpeg", headers={"Content-Disposition": "attachment; filename=output.mp3"})
-    else:
-        audio_stream = eleven_labs_client.text_to_speech.convert_as_stream(
-            text=request.input,
-            voice_id=request.voice_id,
-            model_id="eleven_turbo_v2_5",
-            output_format="mp3_44100_128",
-        )
-
-        for chunk in audio_stream:
-            if isinstance(chunk, bytes):
-                print(chunk)
-        return StreamingResponse(audio_stream, media_type="audio/mpeg") 
+    audio = StreamingResponse(generate_speech_audio(request.input, request.voice_id, request.stream), media_type="audio/mpeg")  
+    return audio
 
 
 # -------------------------------------- Image --------------------------------------
