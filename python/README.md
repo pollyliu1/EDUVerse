@@ -149,5 +149,5 @@ Additional example:
 curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
 -F "file=@examples/code.png" \
--F "prompt=What is the text in the image?"
+-F "prompt=what color is the image?"
 ```

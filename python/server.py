@@ -62,36 +62,38 @@ class ImageRequest(BaseModel):
 
 
 # -------------------------------------- Chat --------------------------------------
-def send_message(prompt: str, llm: str, max_tokens: int = None, temperature: float = None, top_p: float = None):
-    request_payload = {
-        "model": "gpt-4o",
-        "messages": [
+def send_message(prompt: str, llm: str = "openai", max_tokens: int = None, temperature: float = None, top_p: float = None):
+    try:
+        request_payload = {
+            "model": "gpt-4o",
+            "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt},
-        ]
-    }
-    if max_tokens is not None:
-        request_payload["max_tokens"] = max_tokens
-    if temperature is not None:
-        request_payload["temperature"] = temperature
-    if top_p is not None:
-        request_payload["top_p"] = top_p
-    if llm == "openai":
-        return openai_client.chat.completions.create(**request_payload)
-    elif llm == "groq":
-        request_payload["model"] = "llama-3.3-70b-versatile"
-        return groq_client.chat.completions.create(**request_payload)
-    else:
-        raise HTTPException(status_code=400, detail="Invalid LLM")
+            ]
+        }
+        if max_tokens is not None:
+            request_payload["max_tokens"] = max_tokens
+        if temperature is not None:
+            request_payload["temperature"] = temperature
+        if top_p is not None:
+            request_payload["top_p"] = top_p
+        if llm == "openai":
+            response= openai_client.chat.completions.create(**request_payload)
+            return response.choices[0].message.content
+        elif llm == "groq":
+            request_payload["model"] = "llama-3.3-70b-versatile"
+            response = groq_client.chat.completions.create(**request_payload)
+            return response.choices[0].message.content
+        else:
+            raise HTTPException(status_code=400, detail="Invalid LLM")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    try:
-        response = send_message(request.prompt, request.llm, request.max_tokens, request.temperature, request.top_p)
-        print(response.choices[0].message.content)
-        return {"response": response.choices[0].message.content}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    response = send_message(request.prompt, request.llm, request.max_tokens, request.temperature, request.top_p)
+    return {"response": response}
+
     
 
 # -------------------------------------- Speech --------------------------------------
@@ -118,7 +120,6 @@ def transcribe_audio(file: UploadFile, provider: str = "groq"):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# API endpoint that calls the transcription function
 @app.post("/transcribe")
 async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
     return transcribe_audio(file, provider)
@@ -148,29 +149,26 @@ def generate_speech_audio(input: str, voice_id: str = "qDazFCguyJ6M5CH0mFuN", st
                 output_format="mp3_44100_128",
             )
 
-            return audio_stream
+            return StreamingResponse(audio_stream, media_type="audio/mpeg")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# API endpoint that calls the speech generation function
 @app.post("/generate_speech")
 async def generate_speech(request: GenerateSpeechRequest):
-    audio = StreamingResponse(generate_speech_audio(request.input, request.voice_id, request.stream), media_type="audio/mpeg")  
+    audio = generate_speech_audio(request.input, request.voice_id, request.stream)
     return audio
 
 
 # -------------------------------------- Image --------------------------------------
-def send_image_message(image_data: bytes, request: ImageRequest):
-    # Encode image to base64
-    image_base64 = base64.b64encode(image_data).decode("utf-8")
-    
+def send_image_message(image_data: bytes, prompt: str = "Describe the content of this image.", max_tokens: int = None, temperature: float = None, top_p: float = None):
+    image_base64 = base64.b64encode(image_data).decode("utf-8")    
     request_payload = {
         "model": "gpt-4o",
         "messages": [
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": request.prompt},
+                    {"type": "text", "text": prompt},
                     {
                         "type": "image_url",
                         "image_url": {
@@ -182,12 +180,12 @@ def send_image_message(image_data: bytes, request: ImageRequest):
         ],
     }
     
-    if request.max_tokens is not None:
-        request_payload["max_tokens"] = request.max_tokens
-    if request.temperature is not None:
-        request_payload["temperature"] = request.temperature
-    if request.top_p is not None:
-        request_payload["top_p"] = request.top_p
+    if max_tokens is not None:
+        request_payload["max_tokens"] = max_tokens
+    if temperature is not None:
+        request_payload["temperature"] = temperature
+    if top_p is not None:
+        request_payload["top_p"] = top_p
         
     return openai_client.chat.completions.create(**request_payload)
 
@@ -195,26 +193,59 @@ def send_image_message(image_data: bytes, request: ImageRequest):
 async def image_to_text(
     file: UploadFile = File(...),
     prompt: str = Form(default="Describe the content of this image."),
-    max_tokens: int = None,
-    temperature: float = None,
-    top_p: float = None
+    max_tokens: int = Form(default=None),
+    temperature: float = Form(default=None),
+    top_p: float = Form(default=None)
 ):
     try:
-        # Read the image file
         image_data = await file.read()
-        
-        # Create request object
-        request = ImageRequest(
-            prompt=prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p
-        )
-        
-        # Send to OpenAI
-        response = send_image_message(image_data, request)
+        response = send_image_message(image_data, prompt, max_tokens, temperature, top_p)
         
         return {"response": response.choices[0].message.content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+
+# -------------------------------------- Agent Flow --------------------------------------
+class AgentFlowRequest(BaseModel):
+    image: UploadFile = File(...)
+    audio: UploadFile = File(...)
+
+
+@app.post("/agent-flow")
+async def agent_flow(request: AgentFlowRequest):
+    image_data = await request.image.read()
+    audio_data = await request.audio.read()
+
+    transcribed_audio = transcribe_audio(audio_data)
+    print(transcribed_audio)
+
+    # clean transcribed audio
+    prompt = "The following is transcribed audio. If it is a question or comment that can be answered, " \
+        "clean up the transcription. If it is not a question or comment that can be answered, " \
+        "respond only with: INVALID" \
+        "The transcribed audio is here: " \
+        f"{transcribed_audio}"
+    
+    cleaned_audio = send_message(prompt, "openai")
+    print(cleaned_audio)
+
+    if "INVALID" in cleaned_audio.choices[0].message.content:
+        # Here, we will say "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
+        sorry_response = "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
+        speech_response = generate_speech_audio(sorry_response)
+        return {"text_response": sorry_response, "speech_response": speech_response}
+    
+    agent_prompt = "The following is a user's question about the image. Answer the question based on the image. " \
+        "The user's question is: " \
+        f"{cleaned_audio.choices[0].message.content}" 
+    
+    agent_response = image_to_text(image_data, agent_prompt)
+    print(agent_response)
+
+    # Generate speech response
+    speech_response = generate_speech_audio(agent_response)
+    return {"text_response": agent_response, "speech_response": speech_response}
+    
+    
+
