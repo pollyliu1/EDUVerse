@@ -1,16 +1,10 @@
-import React, { useEffect, useRef } from "react";
-import { initThreeScene } from "./ThreeScene";
+import React, { useRef } from "react";
 import "./App.css";
 
 const App: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const cleanup = initThreeScene(mountRef as unknown as React.RefObject<HTMLDivElement>);
-    return cleanup;
-  }, []);
-
-  return <div ref={mountRef} style={{ width: "70vw", height: "50vh" }} />;
+  return <div ref={mountRef} style={{ width: "70vw", height: "50vh" }} className="three-container" />;
 };
 
 export default App;
