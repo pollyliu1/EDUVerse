@@ -1,6 +1,7 @@
+import * as THREE from "three";
+import AILoader from "./AILoader";
 import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
-import * as THREE from "three";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -9,19 +10,22 @@ interface HandPosition {
 
 class Game {
   scene: ThreeScene;
+  aiLoader: AILoader;
   slideLoader: SlideLoader;
 
   constructor() {
     this.scene = new ThreeScene();
+    this.aiLoader = new AILoader(this.scene);
     this.slideLoader = new SlideLoader(this.scene);
   }
 
   init() {
     this.scene.init();
     this.slideLoader.loadSlides();
-
+    this.aiLoader.load();
     setInterval(() => {
       this.scene.animate();
+      this.aiLoader.animate();
     }, 1000 / 60);
   }
 
