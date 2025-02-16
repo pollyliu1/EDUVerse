@@ -15,7 +15,7 @@ export default class AILoader {
     this.loader.load("/gltf/rubber_duck.glb", (gltf) => {
       const duck = gltf.scene;
       duck.children.forEach((child) => {
-        child.scale.multiplyScalar(0.003); // Reduced scale from 0.1 to 0.01 to make duck smaller
+        child.scale.multiplyScalar(0.0025); // Reduced scale from 0.1 to 0.01 to make duck smaller
       });
       duck.position.set(-1.5, 1.5, -1);
       duck.rotation.y = 8;
