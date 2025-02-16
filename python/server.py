@@ -9,10 +9,25 @@ import base64
 import io
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play, stream
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv('../.env')
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://localhost:8080",
+    "https://grey-need-permission-disable.trycloudflare.com",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 openai_client = openai.OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),  
