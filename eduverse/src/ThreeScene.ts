@@ -127,6 +127,23 @@ class ThreeScene {
     this.controller2 = this.renderer.xr.getController(1);
     this.scene.add(this.controller2);
 
+    // add event listeners for controller and hand models
+    this.controller1.addEventListener("selectstart", () => {
+      console.log("controller 1 selected");
+    });
+
+    this.controller2.addEventListener("selectstart", () => {
+      console.log("controller 2 selected");
+    });
+
+    this.controller1.addEventListener("selectend", () => {
+      console.log("controller 1 selected end");
+    });
+
+    this.controller2.addEventListener("selectend", () => {
+      console.log("controller 2 selected end");
+    });
+
     // Initialize controller and hand models with OculusHandModel
     this.loadOculusHandModels();
   }
@@ -269,9 +286,9 @@ class ThreeScene {
 
     this.renderer.render(this.scene, this.camera);
 
-    // this.cubes.forEach((cube) => {
-    //   cube.update();
-    // });
+    this.cubes.forEach((cube) => {
+      cube.update();
+    });
   }
 
   updateHands() {

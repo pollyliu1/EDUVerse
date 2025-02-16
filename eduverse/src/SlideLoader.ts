@@ -15,7 +15,7 @@ export default class SlideLoader {
     const promises = [];
     for (let i = 1; i <= NUM_SLIDES; i++) {
       const promise = new Promise<THREE.Texture>((resolve) => {
-        this.loader.load(`/images/textbook/complex-numbers.pdf-${i}-${i}.jpg`, (texture) => {
+        this.loader.load(`/images/textbook/complex-numbers-${i}.png`, (texture) => {
           resolve(texture);
         });
       });
