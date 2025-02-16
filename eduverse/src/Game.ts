@@ -1,5 +1,11 @@
 import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
+import * as THREE from "three";
+
+interface HandPosition {
+  left: THREE.Vector3 | null;
+  right: THREE.Vector3 | null;
+}
 
 class Game {
   scene: ThreeScene;
@@ -15,12 +21,17 @@ class Game {
     this.slideLoader.loadSlides();
 
     setInterval(() => {
-      this.update();
+      this.scene.animate();
     }, 1000 / 60);
   }
 
   update() {
     this.slideLoader.update();
+    // Additional update logic can be added here
+  }
+
+  getHandPositions(): HandPosition {
+    return this.scene.getHandPositions();
   }
 }
 

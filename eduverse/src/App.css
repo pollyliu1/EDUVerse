@@ -7,9 +7,28 @@
 }
 
 .three-container {
+  z-index: -1;
   width: 100vw;
   height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.App {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.hand-positions {
+  text-align: left;
+}
+
+.hand-positions h2 {
+  margin: 0 0 10px 0;
 }
