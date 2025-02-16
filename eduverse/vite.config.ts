@@ -12,6 +12,7 @@ export default defineConfig({
       "dx-invention-curves-sam.trycloudflare.com",
       "asked-literally-lt-mattress.trycloudflare.com",
       "el-producing-songs-aaron.trycloudflare.com",
+      "virginia-aviation-slovakia-tv.trycloudflare.com",
     ],
   },
 });
