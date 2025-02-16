@@ -1,9 +1,14 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
-from PIL import Image
+from PIL import Image, File, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import openai
 import os
 from dotenv import load_dotenv
+# from groq import Groq
+import io
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play, stream
 from groq import Groq
 import io
 import base64
@@ -22,14 +27,21 @@ groq_client = openai.OpenAI(
     base_url="https://api.groq.com/openai/v1",
 )
 
+eleven_labs_client = ElevenLabs(
+    api_key=os.environ.get("ELEVENLABS_API_KEY"),
+)
 
-# Define a Pydantic model for the request body
 class ChatRequest(BaseModel):
     llm: str = "openai"
     prompt: str
     max_tokens: int = None
     temperature: float = None
     top_p: float = None
+
+class GenerateSpeechRequest(BaseModel):
+    input: str
+    stream: bool = True
+    voice_id: str = "qDazFCguyJ6M5CH0mFuN" # 3blue1brown
 
 def send_message(prompt: str, llm: str, max_tokens: int = None, temperature: float = None, top_p: float = None):
     request_payload = {
@@ -63,68 +75,63 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-# Define a Pydantic model for the image request
-class ImageRequest(BaseModel):
-    prompt: str = "Describe the content of this image."
-    max_tokens: int = None
-    temperature: float = None
-    top_p: float = None
-
-def send_image_message(image_data: bytes, request: ImageRequest):
-    # Encode image to base64
-    image_base64 = base64.b64encode(image_data).decode("utf-8")
-    
-    request_payload = {
-        "model": "gpt-4o",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": request.prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
-                        }
-                    }
-                ]
-            }
-        ],
-        "max_tokens": 300
-    }
-    
-    if request.max_tokens is not None:
-        request_payload["max_tokens"] = request.max_tokens
-    if request.temperature is not None:
-        request_payload["temperature"] = request.temperature
-    if request.top_p is not None:
-        request_payload["top_p"] = request.top_p
-        
-    return openai_client.chat.completions.create(**request_payload)
-
-@app.post("/image-to-text")
-async def image_to_text(
-    file: UploadFile = File(...),
-    prompt: str | None = Form(default="Describe the content of this image."),
-    max_tokens: int | None = Form(default=None),
-    temperature: float | None = Form(default=None),
-    top_p: float | None = Form(default=None)
-):
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
     try:
-        # Read the image file
-        image_data = await file.read()
-        
-        # Create request object
-        request = ImageRequest(
-            prompt=prompt or "Describe the content of this image.",  # Use default if prompt is None
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p
-        )
-        
-        # Send to OpenAI
-        response = send_image_message(image_data, request)
-        
-        return {"response": response.choices[0].message.content}
+        audio_bytes = await file.read()
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = file.filename  
+
+        if provider == "groq":
+
+            transcript = groq_client.audio.transcriptions.create(
+                model="whisper-large-v3-turbo",
+                file=(audio_file.name, audio_file),
+                response_format="json",
+                language="en"
+            )
+            return {"transcript": transcript.text}
+        else:
+            transcript = openai_client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+            )
+            return {"transcript": transcript["text"].strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post("/generate_speech")
+async def generate_speech(request: GenerateSpeechRequest):
+    if not request.stream: # currently only supports streaming
+        response = eleven_labs_client.text_to_speech.convert(
+            text=request.input,
+            # grant's voice (3blue1brown)
+            voice_id=request.voice_id,
+            # voice_id="JBFqnCBsd6RMkjVDRZzb",
+            # model_id="eleven_multilingual_v2",
+            model_id="eleven_turbo_v2_5",
+                output_format="mp3_44100_128",
+        )
+
+        audio_data = io.BytesIO()
+        for chunk in response:
+            audio_data.write(chunk)        
+        audio_data.seek(0)
+        audio_data.name = "output.mp3"
+        return StreamingResponse(audio_data, media_type="audio/mpeg", headers={"Content-Disposition": "attachment; filename=output.mp3"})
+    else:
+        audio_stream = eleven_labs_client.text_to_speech.convert_as_stream(
+            text=request.input,
+            voice_id=request.voice_id,
+            model_id="eleven_turbo_v2_5",
+            output_format="mp3_44100_128",
+        )
+
+        for chunk in audio_stream:
+            if isinstance(chunk, bytes):
+                print(chunk)
+        return StreamingResponse(audio_stream, media_type="audio/mpeg") 
+
+
+

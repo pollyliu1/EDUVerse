@@ -16,8 +16,13 @@ if [ ! -d "venv" ]; then
     exit 1
 fi
 
-# Activate the virtual environment
-source venv/bin/activate
+
+# check if they've run source venv/bin/activate
+if [ -z "$VIRTUAL_ENV" ]; then
+    echo "Error: Please activate the virtual environment by running:"
+    echo "source venv/bin/activate"
+    exit 1
+fi
 
 # Install dependencies
 pip install -r pip-freeze.txt

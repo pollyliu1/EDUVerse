@@ -15,7 +15,7 @@ export default class SlideLoader {
     const promises = [];
     for (let i = 1; i <= NUM_SLIDES; i++) {
       const promise = new Promise<THREE.Texture>((resolve) => {
-        this.loader.load(`/images/slides/slide${i}.png`, (texture) => {
+        this.loader.load(`/images/textbook/complex-numbers-${i}.png`, (texture) => {
           resolve(texture);
         });
       });
@@ -31,10 +31,12 @@ export default class SlideLoader {
   }
 
   createSlide(texture: THREE.Texture) {
-    const geometry = new THREE.PlaneGeometry(5, 3);
+    const width = 3;
+    const height = width * 1.414;
+    const geometry = new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const imagePlane = new THREE.Mesh(geometry, material);
-    imagePlane.position.set(0, 0, -5);
+    imagePlane.position.set(0, 0, -3);
     this.slides.push(imagePlane);
     this.scene.scene.add(imagePlane);
   }

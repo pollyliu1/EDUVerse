@@ -100,9 +100,34 @@ Groq:
 curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d '{"prompt": "Whats the capital of France?", "llm": "groq"}'
 ```
 
-### AI Conversions
+## Transcribe
 
-Image to text (default):
+```bash
+curl -X POST "http://127.0.0.1:8000/transcribe" \
+     -H "Content-Type: multipart/form-data" \
+     -F "file=@examples/harvard.wav" \
+     -F "provider=groq"
+```
+
+You can also use "openai" as the provider.
+
+## Generate Speech
+
+```bash
+curl -X POST "http://localhost:8000/generate_speech" \
+     -H "Content-Type: application/json" \
+     -d '{"input": "Hi, my name is Hargun. I study software engineering at the University of Waterloo!"}' \
+     --output outputs/result.mp3
+```
+
+Other optional parameters:
+
+- `stream`: whether to stream the audio
+- `voice_id`: the voice id to use
+
+### Image to Text
+
+Describe the image (default):
 ```bash
 curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
@@ -112,7 +137,7 @@ curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -F "top_p=1.0"
 ```
 
-Image to text (custom prompt):
+Custom prompt:
 ```bash
 curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
