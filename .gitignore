@@ -280,3 +280,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,unity
+
+# Ignore all files in the outputs directory minus the README.md file
+python/outputs/*
+!python/outputs/README.md

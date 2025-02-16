@@ -6,37 +6,53 @@ This project provides a command-line interface (CLI) tool to convert documents s
 
 First, ensure you have Python installed. Then, install the required packages:
 
-```bash
-python python/convert_to_images.py <input_file> [<output_folder>] --type <file_type>
-- `<input_file>`: Path to the input file (e.g., PDF, PPTX, Keynote, Google Slides)
-- `<output_folder>`: Path to the output folder where images will be saved (default is `/outputs`)
-- `<file_type>`: Type of the input file (e.g., pdf, pptx, key, slide)
-```
+### Step 1: Create a Virtual Environment
 
-### Examples
+`cd python && python -m venv venv`
+
+### Step 2: Activate the Virtual Environment
+
+`source venv/bin/activate`
+
+### Step 3: Install the Required Packages
+
+`pip install -r pip-freeze.txt`
+
+### Step 4: Install Poppler (macOS)
+
+`brew install poppler`
+
+### Usage
 
 Convert a PDF to images:
 
 ```bash
-python python/convert_to_images.py example.pdf output_folder --type pdf
+python python/convert_to_images.py example.pdf output_folder
 ```
 
 Convert a PPTX to images:
 
 ```bash
-python python/convert_to_images.py example.pptx output_folder --type pptx
+python python/convert_to_images.py example.pptx output_folder
 ```
 
 Convert a Keynote to images:
 
 ```bash
-python python/convert_to_images.py example.key output_folder --type key
+python python/convert_to_images.py example.key output_folder
 ```
 
 Convert a Google Slides to images:
 
 ```bash
-python python/convert_to_images.py example.slide output_folder --type slide
+python python/convert_to_images.py example.slide output_folder
 ```
 
 If you do not specify an `output_folder`, the images will be saved in the `/outputs` directory by default.
+It can automatically detect the file type if you do not specify the file type.
+
+### Examples
+
+```bash
+python convert_to_images.py examples/waterloo-strat-plan-2019-2023.pdf
+```
