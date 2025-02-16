@@ -248,7 +248,7 @@ class ThreeScene {
     // ROOM BACKGROUND:
     // const rgbeLoader = new RGBELoader();
     // try {
-    //   const backgroundTexture = await rgbeLoader.loadAsync('background.hdr');
+    //   const backgroundTexture = await rgbeLoader.loadAsync('public/gltf/background.hdr');
     //   backgroundTexture.mapping = THREE.EquirectangularReflectionMapping;
     //   this.scene.background = backgroundTexture;
     //   this.scene.environment = backgroundTexture; // This enables reflections
@@ -261,7 +261,7 @@ class ThreeScene {
     // CAFE BACKGROUND:
     const loader = new EXRLoader();
     try {
-      const backgroundTexture = await loader.loadAsync('cafe-background.exr');
+      const backgroundTexture = await loader.loadAsync('public/gltf/cafe-background.exr');
       backgroundTexture.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.background = backgroundTexture;
       this.scene.environment = backgroundTexture; // This enables reflections
