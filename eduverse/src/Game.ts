@@ -1,12 +1,18 @@
+import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
 
 class Game {
-  scene = new ThreeScene();
+  scene: ThreeScene;
+  slideLoader: SlideLoader;
 
-  constructor() {}
+  constructor() {
+    this.scene = new ThreeScene();
+    this.slideLoader = new SlideLoader(this.scene);
+  }
 
   init() {
     this.scene.init();
+    this.slideLoader.loadSlides();
   }
 }
 
