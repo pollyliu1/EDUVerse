@@ -11,3 +11,6 @@ createRoot(document.getElementById("root")!).render(
 
 const game = new Game();
 game.init();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).game = game;

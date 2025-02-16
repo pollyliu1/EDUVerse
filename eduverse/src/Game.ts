@@ -13,6 +13,14 @@ class Game {
   init() {
     this.scene.init();
     this.slideLoader.loadSlides();
+
+    setInterval(() => {
+      this.update();
+    }, 1000 / 60);
+  }
+
+  update() {
+    this.slideLoader.update();
   }
 }
 
