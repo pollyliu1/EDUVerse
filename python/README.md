@@ -62,8 +62,31 @@ python convert_to_images.py examples/slide.pptx
 ```
 
 ### Clean Up
+
 Clear output folder for testing:
+
 ```bash
 python3 clear_outputs.py
 ```
 
+# FastAPI server
+
+```bash
+./run_server.sh
+```
+
+Once the server is running, you can access it by navigating to http://127.0.0.1:8000 in your web browser.
+
+### Query the server
+
+OpenAI:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d '{"prompt": "Whats the capital of France?", "llm": "openai"}'
+```
+
+Groq:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d '{"prompt": "Whats the capital of France?", "llm": "groq"}'
+```
