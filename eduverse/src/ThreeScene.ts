@@ -150,8 +150,9 @@ class ThreeScene {
     const rbEntity = this.world.createEntity();
     rbEntity.addComponent(Intersectable);
     rbEntity.addComponent(Object3D, { object: resetButton });
+    const world = this.world;
     const rbAction = function () {
-      this.world.getSystem(RandomizerSystem).needRandomizing = true;
+      world.getSystem(RandomizerSystem).needRandomizing = true;
     };
     rbEntity.addComponent(Button, { action: rbAction });
 
