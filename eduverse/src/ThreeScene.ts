@@ -114,10 +114,12 @@ class ThreeScene {
 
   onSelectStart() {
     game.isSelecting = true;
+    game.startRecording();
   }
 
   onSelectEnd() {
     game.isSelecting = false;
+    game.stopRecording();
   }
 
   constructor() {

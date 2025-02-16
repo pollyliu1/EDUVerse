@@ -48,10 +48,9 @@ export async function startRecording() {
     document.body.appendChild(videoElement);
 
     // play the audio
-    const audioUrl = URL.createObjectURL(blob);
-    const audio = new Audio(audioUrl);
+    const audio = new Audio(url);
     audio.play();
-    URL.revokeObjectURL(audioUrl); // Clean up the URL after use
+    URL.revokeObjectURL(url); // Clean up the URL after use
   };
 
   mediaRecorder.start();
