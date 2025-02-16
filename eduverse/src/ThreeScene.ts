@@ -24,6 +24,7 @@ import {
 } from "./dragger";
 import { game } from "./main";
 import { loadPDF } from "./pdf";
+import ModelLoader from "./ModelLoader";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -39,17 +40,15 @@ function makeButtonMesh(x, y, z, color) {
 
 const FLOOR_HEIGHT = 0;
 
-class Cube {
+export class Cube {
   static SIZE = 0.15;
-  object: THREE.Mesh;
+  object: THREE.Group | THREE.Mesh;
 
   velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
 
-  constructor(scene: THREE.Scene, world: World) {
-    this.object = new THREE.Mesh(
-      new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE),
-      new THREE.MeshLambertMaterial({ color: 0xffffff })
-    );
+  constructor(scene: THREE.Scene, world: World, object?: THREE.Group | THREE.Mesh) {
+    this.object =
+      object || new THREE.Mesh(new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE), new THREE.MeshLambertMaterial({ color: 0xffffff }));
     scene.add(this.object);
 
     const entity = world.createEntity();
@@ -106,6 +105,8 @@ class ThreeScene {
   // Factories for controller and hand models
   controllerModelFactory: XRControllerModelFactory;
   handModelFactory: XRHandModelFactory;
+
+  modelLoader: ModelLoader;
 
   world = new World();
   clock = new THREE.Clock();
