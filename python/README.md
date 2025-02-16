@@ -71,6 +71,15 @@ python3 clear_outputs.py
 
 # FastAPI server
 
+Create a `.env` file and add your API keys:
+
+```bash
+cp .env.example .env
+# modify the .env file
+```
+
+Run the server:
+
 ```bash
 ./run_server.sh
 ```
