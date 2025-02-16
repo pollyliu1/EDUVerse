@@ -128,22 +128,26 @@ Other optional parameters:
 ### Image to Text
 
 Describe the image (default):
+
 ```bash
 curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
 -F "file=@examples/chill.jpg" \
--F "max_tokens=100" \
--F "temperature=0.7" \
--F "top_p=1.0"
+-F "prompt=Does this character seem trustworthy?"
 ```
 
-Custom prompt:
+Optional parameters:
+
+- `prompt`: the prompt to use
+- `max_tokens`: the maximum number of tokens to generate
+- `temperature`: the temperature of the model
+- `top_p`: the top p of the model
+
+Additional example:
+
 ```bash
 curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
--F "file=@examples/chill.jpg" \
--F "prompt=Does this character seem trustworthy?" \
--F "max_tokens=100" \
--F "temperature=0.7" \
--F "top_p=1.0"
+-F "file=@examples/code.png" \
+-F "prompt=What is the text in the image?"
 ```

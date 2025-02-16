@@ -41,9 +41,9 @@ class GenerateSpeechRequest(BaseModel):
 
 class ImageRequest(BaseModel):
     prompt: str = "Describe the content of this image."
-    max_tokens: int = None
-    temperature: float = None
-    top_p: float = None
+    max_tokens: int | None = None
+    temperature: float | None = None
+    top_p: float | None = None
 
 
 # -------------------------------------- Chat --------------------------------------
@@ -160,7 +160,6 @@ def send_image_message(image_data: bytes, request: ImageRequest):
                 ]
             }
         ],
-        "max_tokens": 300
     }
     
     if request.max_tokens is not None:
@@ -175,10 +174,10 @@ def send_image_message(image_data: bytes, request: ImageRequest):
 @app.post("/image-to-text")
 async def image_to_text(
     file: UploadFile = File(...),
-    prompt: str | None = Form(default="Describe the content of this image."),
-    max_tokens: int | None = Form(default=None),
-    temperature: float | None = Form(default=None),
-    top_p: float | None = Form(default=None)
+    prompt: str = Form(default="Describe the content of this image."),
+    max_tokens: int = None,
+    temperature: float = None,
+    top_p: float = None
 ):
     try:
         # Read the image file
@@ -186,7 +185,7 @@ async def image_to_text(
         
         # Create request object
         request = ImageRequest(
-            prompt=prompt or "Describe the content of this image.",  # Use default if prompt is None
+            prompt=prompt,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p
