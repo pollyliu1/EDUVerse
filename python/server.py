@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import openai
 import os
 from dotenv import load_dotenv
-from groq import Groq
+# from groq import Groq
 import io
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play, stream
 
 load_dotenv('../.env')
 
@@ -19,14 +22,21 @@ groq_client = openai.OpenAI(
     base_url="https://api.groq.com/openai/v1",
 )
 
+eleven_labs_client = ElevenLabs(
+    api_key=os.environ.get("ELEVENLABS_API_KEY"),
+)
 
-# Define a Pydantic model for the request body
 class ChatRequest(BaseModel):
     llm: str = "openai"
     prompt: str
     max_tokens: int = None
     temperature: float = None
     top_p: float = None
+
+class GenerateSpeechRequest(BaseModel):
+    input: str
+    stream: bool = True
+    voice_id: str = "qDazFCguyJ6M5CH0mFuN" # 3blue1brown
 
 def send_message(prompt: str, llm: str, max_tokens: int = None, temperature: float = None, top_p: float = None):
     request_payload = {
@@ -63,12 +73,10 @@ async def chat(request: ChatRequest):
 @app.post("/transcribe")
 async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
     try:
-        # Read the uploaded file
         audio_bytes = await file.read()
         audio_file = io.BytesIO(audio_bytes)
-        audio_file.name = file.filename  # Whisper requires the file to have a name attribute
+        audio_file.name = file.filename  
 
-        # Transcribe audio using OpenAI's Whisper
         if provider == "groq":
 
             transcript = groq_client.audio.transcriptions.create(
@@ -86,3 +94,39 @@ async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
             return {"transcript": transcript["text"].strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post("/generate_speech")
+async def generate_speech(request: GenerateSpeechRequest):
+    if not request.stream: # currently only supports streaming
+        response = eleven_labs_client.text_to_speech.convert(
+            text=request.input,
+            # grant's voice (3blue1brown)
+            voice_id=request.voice_id,
+            # voice_id="JBFqnCBsd6RMkjVDRZzb",
+            # model_id="eleven_multilingual_v2",
+            model_id="eleven_turbo_v2_5",
+                output_format="mp3_44100_128",
+        )
+
+        audio_data = io.BytesIO()
+        for chunk in response:
+            audio_data.write(chunk)        
+        audio_data.seek(0)
+        audio_data.name = "output.mp3"
+        return StreamingResponse(audio_data, media_type="audio/mpeg", headers={"Content-Disposition": "attachment; filename=output.mp3"})
+    else:
+        audio_stream = eleven_labs_client.text_to_speech.convert_as_stream(
+            text=request.input,
+            voice_id=request.voice_id,
+            model_id="eleven_turbo_v2_5",
+            output_format="mp3_44100_128",
+        )
+
+        for chunk in audio_stream:
+            if isinstance(chunk, bytes):
+                print(chunk)
+        return StreamingResponse(audio_stream, media_type="audio/mpeg") 
+
+
+

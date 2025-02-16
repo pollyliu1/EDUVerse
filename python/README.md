@@ -110,3 +110,17 @@ curl -X POST "http://127.0.0.1:8000/transcribe" \
 ```
 
 You can also use "openai" as the provider.
+
+## Generate Speech
+
+```bash
+curl -X POST "http://localhost:8000/generate_speech" \
+     -H "Content-Type: application/json" \
+     -d '{"input": "Hi, my name is Hargun. I study software engineering at the University of Waterloo!"}' \
+     --output outputs/result.mp3
+```
+
+Other optional parameters:
+
+- `stream`: whether to stream the audio
+- `voice_id`: the voice id to use
