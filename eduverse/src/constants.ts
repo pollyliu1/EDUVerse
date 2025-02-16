@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://mercury-pharmacies-society-highest.trycloudflare.com";
+export const BACKEND_URL = "https://participant-flights-halifax-doug.trycloudflare.com";

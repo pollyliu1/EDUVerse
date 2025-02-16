@@ -12,7 +12,11 @@ export default class SlideLoader {
   currentSlidePosition = 0;
   firstSelectedPosition: number | null = null;
 
-  constructor(readonly scene: ThreeScene) {}
+  constructor(readonly scene: ThreeScene) {
+    // Define a clipping plane at y = 1.5
+    const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 3);
+    this.scene.renderer.clippingPlanes = [clippingPlane];
+  }
 
   getCurrentSlide(): number {
     const index = Math.floor(this.slides.position.y / (APPROX_SLIDE_HEIGHT * 3));
