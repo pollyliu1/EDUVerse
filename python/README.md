@@ -99,3 +99,26 @@ Groq:
 ```bash
 curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d '{"prompt": "Whats the capital of France?", "llm": "groq"}'
 ```
+
+### AI Conversions
+
+Image to text (default):
+```bash
+curl -X POST "http://127.0.0.1:8000/image-to-text" \
+-H "Content-Type: multipart/form-data" \
+-F "file=@examples/chill.jpg" \
+-F "max_tokens=100" \
+-F "temperature=0.7" \
+-F "top_p=1.0"
+```
+
+Image to text (custom prompt):
+```bash
+curl -X POST "http://127.0.0.1:8000/image-to-text" \
+-H "Content-Type: multipart/form-data" \
+-F "file=@examples/chill.jpg" \
+-F "prompt=Does this character seem trustworthy?" \
+-F "max_tokens=100" \
+-F "temperature=0.7" \
+-F "top_p=1.0"
+```
