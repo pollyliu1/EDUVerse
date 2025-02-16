@@ -24,9 +24,7 @@ import {
 } from "./dragger";
 import { game } from "./main";
 import ModelLoader from "./ModelLoader";
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
-
+import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -131,10 +129,10 @@ class ThreeScene {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 20);
     this.camera.position.set(0, 1.2, 0.3);
-    this.renderer = new THREE.WebGLRenderer({ 
+    this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       toneMapping: THREE.ACESFilmicToneMapping,
-      outputColorSpace: THREE.SRGBColorSpace
+      outputColorSpace: THREE.SRGBColorSpace,
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.xr.enabled = true;
@@ -261,14 +259,14 @@ class ThreeScene {
     // CAFE BACKGROUND:
     const loader = new EXRLoader();
     try {
-      const backgroundTexture = await loader.loadAsync('public/gltf/cafe-background.exr');
+      const backgroundTexture = await loader.loadAsync("public/gltf/cafe-background.exr");
       backgroundTexture.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.background = backgroundTexture;
       this.scene.environment = backgroundTexture; // This enables reflections
     } catch (error) {
-      console.error('Failed to load HDR background:', error);
+      console.error("Failed to load HDR background:", error);
       // Fallback to solid color if HDR loading fails
-      this.scene.background = new THREE.Color(0x89CFF0);
+      this.scene.background = new THREE.Color(0x89cff0);
     }
 
     // Append VR Button

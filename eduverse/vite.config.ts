@@ -13,6 +13,7 @@ export default defineConfig({
       "asked-literally-lt-mattress.trycloudflare.com",
       "el-producing-songs-aaron.trycloudflare.com",
       "virginia-aviation-slovakia-tv.trycloudflare.com",
+      "believed-vb-hand-challenged.trycloudflare.com",
     ],
   },
 });
