@@ -18,7 +18,7 @@ First, ensure you have Python installed. Then, install the required packages:
 
 `pip install -r pip-freeze.txt`
 
-### Step 4: Install Poppler (macOS)
+### Step 4 (Only for Document-to-Image Converter): Install Poppler (macOS)
 
 `brew install poppler`
 
@@ -71,7 +71,7 @@ python3 clear_outputs.py
 
 # FastAPI server
 
-Create a `.env` file and add your API keys:
+From the root directory, create a `.env` file and add your API keys:
 
 ```bash
 cp .env.example .env
@@ -81,6 +81,7 @@ cp .env.example .env
 Run the server:
 
 ```bash
+cd python
 ./run_server.sh
 ```
 
@@ -150,4 +151,14 @@ curl -X POST "http://127.0.0.1:8000/image-to-text" \
 -H "Content-Type: multipart/form-data" \
 -F "file=@examples/code.png" \
 -F "prompt=what color is the image?"
+```
+
+## Agent Flow
+
+```bash
+cd examples
+curl -X POST "http://127.0.0.1:8000/agent-flow" \
+     -H "Content-Type: multipart/form-data" \
+     -F "image=@complex-numbers-3.png" \
+     -F "audio=@agent-test-describe-first-paragraph.mp3"
 ```
