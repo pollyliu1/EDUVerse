@@ -1,13 +1,11 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
-from PIL import Image
 from pydantic import BaseModel
 import openai
 import os
 from dotenv import load_dotenv
 from groq import Groq
 import base64
-import json
 import io
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play, stream
