@@ -27,7 +27,7 @@ export default class AILoader {
     this.blob = new THREE.Mesh(geometry, material);
 
     // Position it in front of the camera
-    this.blob.position.set(0, 1.5, -1);
+    this.blob.position.set(-1.5, 1.5, -1);
 
     // Add it to the scene
     this.scene.scene.add(this.blob);
