@@ -1,4 +1,5 @@
 import { game } from "./main";
+import { Howl } from "howler";
 
 export async function getMicrophoneStream() {
   try {
@@ -47,10 +48,16 @@ export async function startRecording() {
     videoElement.autoplay = true;
     document.body.appendChild(videoElement);
 
-    // play the audio
-    const audio = new Audio(url);
-    audio.play();
-    URL.revokeObjectURL(url); // Clean up the URL after use
+    // Use Howler to play the audio
+    // const audioUrl = URL.createObjectURL(blob);
+    // const sound = new Howl({
+    //   src: [audioUrl],
+    //   format: ["webm"],
+    //   autoplay: true,
+    //   onend: () => {
+    //     URL.revokeObjectURL(audioUrl); // Clean up the URL after use
+    //   },
+    // });
   };
 
   mediaRecorder.start();
