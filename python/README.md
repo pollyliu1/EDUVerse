@@ -27,25 +27,25 @@ First, ensure you have Python installed. Then, install the required packages:
 Convert a PDF to images:
 
 ```bash
-python python/convert_to_images.py example.pdf output_folder
+python convert_to_images.py example.pdf [output_folder]
 ```
 
 Convert a PPTX to images:
 
 ```bash
-python python/convert_to_images.py example.pptx output_folder
+python convert_to_images.py example.pptx [output_folder]
 ```
 
 Convert a Keynote to images:
 
 ```bash
-python python/convert_to_images.py example.key output_folder
+python convert_to_images.py example.key [output_folder]
 ```
 
 Convert a Google Slides to images:
 
 ```bash
-python python/convert_to_images.py example.slide output_folder
+python convert_to_images.py example.slide [output_folder]
 ```
 
 If you do not specify an `output_folder`, the images will be saved in the `/outputs` directory by default.
