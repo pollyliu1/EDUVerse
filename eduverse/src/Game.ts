@@ -64,6 +64,7 @@ class Game {
     this.slideLoader.loadSlides();
     this.aiLoader.load();
     setInterval(() => {
+      this.update();
       this.scene.animate();
       this.aiLoader.animate();
     }, 1000 / 60);
