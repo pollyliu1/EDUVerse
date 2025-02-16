@@ -184,14 +184,14 @@ class ThreeScene {
     const resetButtonText = createText("reset", 0.06);
     resetButton.add(resetButtonText);
     resetButtonText.position.set(0, 0, 0.0051);
-    resetButton.position.set(0, -0.06, 0);
+    resetButton.position.set(0.4, -0.06, 0);
     menuMesh.add(resetButton);
 
     const exitButton = makeButtonMesh(0.2, 0.1, 0.01, 0xff0000);
     const exitButtonText = createText("exit", 0.06);
     exitButton.add(exitButtonText);
     exitButtonText.position.set(0, 0, 0.0051);
-    exitButton.position.set(0, -0.18, 0);
+    exitButton.position.set(0.4, -0.18, 0);
     menuMesh.add(exitButton);
 
     this.world.registerComponent(Button);
