@@ -2,6 +2,7 @@ import * as THREE from "three";
 import AILoader from "./AILoader";
 import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
+import { getMicrophoneStream, startRecording, stopRecording } from "./AudioManager";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -14,7 +15,10 @@ class Game {
   slideLoader: SlideLoader;
 
   isSelecting = false;
-
+  get isRecording() {
+    return this.mediaRecorder !== null;
+  }
+  mediaRecorder: MediaRecorder | null = null;
   mouse = {
     x: 0,
     y: 0,
@@ -31,12 +35,25 @@ class Game {
     });
 
     document.addEventListener("mousedown", () => {
-      this.isSelecting = true;
+      this.startRecording();
     });
 
     document.addEventListener("mouseup", () => {
-      this.isSelecting = false;
+      this.stopRecording();
     });
+
+    getMicrophoneStream();
+  }
+
+  startRecording() {
+    startRecording().then((recorder) => {
+      this.mediaRecorder = recorder;
+    });
+  }
+
+  stopRecording() {
+    stopRecording(this.mediaRecorder);
+    this.mediaRecorder = null;
   }
 
   init() {
