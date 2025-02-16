@@ -35,6 +35,54 @@ function makeButtonMesh(x, y, z, color) {
   return buttonMesh;
 }
 
+const FLOOR_HEIGHT = 0;
+
+class Cube {
+  static SIZE = 0.15;
+  object: THREE.Mesh;
+
+  velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
+
+  constructor(scene: THREE.Scene, world: World) {
+    this.object = new THREE.Mesh(
+      new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE),
+      new THREE.MeshLambertMaterial({ color: 0xffffff })
+    );
+    scene.add(this.object);
+
+    const entity = world.createEntity();
+    entity.addComponent(Intersectable);
+    entity.addComponent(Randomizable);
+    entity.addComponent(Object3D, { object: this.object });
+    entity.addComponent(Draggable);
+  }
+
+  update() {
+    // Apply gravity to velocity
+    this.velocity.y -= 0.001; // gravity acceleration
+
+    // Update position based on velocity
+    const pos = this.object.position;
+    pos.x += this.velocity.x;
+    pos.y += this.velocity.y;
+    pos.z += this.velocity.z;
+
+    // Floor collision and bounce
+    if (pos.y < FLOOR_HEIGHT + Cube.SIZE / 2) {
+      pos.y = FLOOR_HEIGHT + Cube.SIZE / 2;
+      // Reverse velocity with damping for bounce effect
+      this.velocity.y = -this.velocity.y * 0.7; // 0.7 is bounce dampening factor
+
+      // Apply friction when hitting the ground
+      this.velocity.x *= 0.95;
+      this.velocity.z *= 0.95;
+    }
+
+    // Update the object position
+    this.object.position.set(pos.x, pos.y, pos.z);
+  }
+}
+
 class ThreeScene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -58,6 +106,8 @@ class ThreeScene {
   world = new World();
   clock = new THREE.Clock();
 
+  cubes: Cube[] = [];
+
   constructor() {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10);
@@ -79,21 +129,12 @@ class ThreeScene {
 
     // Initialize controller and hand models with OculusHandModel
     this.loadOculusHandModels();
+  }
 
-    // Create draggable cubes
-    // this.createDraggableCubes();
-
+  async init() {
     const instructionText = createText("This is a WebXR Hands demo, please explore with hands.", 0.04);
     instructionText.position.set(0, 1.6, -0.6);
     this.scene.add(instructionText);
-
-    // setup objects in scene and entities
-    const floorGeometry = new THREE.PlaneGeometry(4, 4);
-    const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    this.scene.add(floor);
 
     const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
     const menuMaterial = new THREE.MeshPhongMaterial({
@@ -137,14 +178,8 @@ class ThreeScene {
       .registerSystem(HandRaySystem, { handPointers: [this.handPointer1, this.handPointer2] });
 
     for (let i = 0; i < 20; i++) {
-      const object = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-      this.scene.add(object);
-
-      const entity = this.world.createEntity();
-      entity.addComponent(Intersectable);
-      entity.addComponent(Randomizable);
-      entity.addComponent(Object3D, { object: object });
-      entity.addComponent(Draggable);
+      const cube = new Cube(this.scene, this.world);
+      this.cubes.push(cube);
     }
 
     const rbEntity = this.world.createEntity();
@@ -172,9 +207,7 @@ class ThreeScene {
     const itEntity = this.world.createEntity();
     itEntity.addComponent(HandsInstructionText);
     itEntity.addComponent(Object3D, { object: instructionText });
-  }
 
-  async init() {
     const mountRef = document.querySelector(".three-container")! as HTMLElement;
 
     // Scene
@@ -201,6 +234,18 @@ class ThreeScene {
     directionalLight.shadow.camera.far = 15;
     directionalLight.shadow.camera.near = 5;
 
+    // Create draggable cubes
+    // this.createDraggableCubes();
+
+    // setup objects in scene and entities
+    const floorGeometry = new THREE.PlaneGeometry(4, 4);
+    const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    floor.position.y = FLOOR_HEIGHT;
+    this.scene.add(floor);
+
     // Handle window resize
     window.addEventListener("resize", this.onWindowResize.bind(this));
 
@@ -223,6 +268,10 @@ class ThreeScene {
     this.world.execute(delta, elapsedTime);
 
     this.renderer.render(this.scene, this.camera);
+
+    this.cubes.forEach((cube) => {
+      cube.update(delta, elapsedTime);
+    });
   }
 
   updateHands() {

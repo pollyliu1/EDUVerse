@@ -234,10 +234,6 @@ export class RandomizerSystem extends System {
       object.position.y = Math.random() * 2;
       object.position.z = Math.random() * 2 - 1;
 
-      object.rotation.x = Math.random() * 2 * Math.PI;
-      object.rotation.y = Math.random() * 2 * Math.PI;
-      object.rotation.z = Math.random() * 2 * Math.PI;
-
       object.scale.x = Math.random() + 0.5;
       object.scale.y = Math.random() + 0.5;
       object.scale.z = Math.random() + 0.5;
