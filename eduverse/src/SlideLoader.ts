@@ -2,6 +2,8 @@ import * as THREE from "three";
 import ThreeScene from "./ThreeScene";
 import { game } from "./main";
 
+const APPROX_SLIDE_HEIGHT = 0.667;
+
 export default class SlideLoader {
   loader = new THREE.TextureLoader();
   slideTextures: THREE.Texture[] = [];
@@ -13,17 +15,17 @@ export default class SlideLoader {
   constructor(readonly scene: ThreeScene) {}
 
   getCurrentSlide(): number {
-    const index = Math.floor(this.slides.position.y / 1.414);
+    const index = Math.floor(this.slides.position.y / (APPROX_SLIDE_HEIGHT * 3));
     // clamp between 1 and 5
-    return Math.max(1, Math.min(5, index));
+    return Math.max(1, Math.min(52, index));
   }
 
   loadSlides() {
-    const NUM_SLIDES = 5;
+    const NUM_SLIDES = 52;
     const promises = [];
     for (let i = 1; i <= NUM_SLIDES; i++) {
       const promise = new Promise<THREE.Texture>((resolve) => {
-        this.loader.load(`/images/textbook/complex-numbers-${i}.png`, (texture) => {
+        this.loader.load(`/images/textbook/notes-${i}.png`, (texture) => {
           resolve(texture);
         });
       });
@@ -42,7 +44,7 @@ export default class SlideLoader {
 
   createSlide(texture: THREE.Texture, index: number) {
     const width = 3;
-    const height = width * 1.414;
+    const height = width * APPROX_SLIDE_HEIGHT;
     const geometry = new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const imagePlane = new THREE.Mesh(geometry, material);
