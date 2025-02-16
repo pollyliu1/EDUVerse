@@ -23,7 +23,6 @@ import {
   RandomizerSystem,
 } from "./dragger";
 import { game } from "./main";
-import { loadPDF } from "./pdf";
 import ModelLoader from "./ModelLoader";
 
 interface HandPosition {
@@ -117,12 +116,12 @@ class ThreeScene {
 
   onSelectStart() {
     game.isSelecting = true;
-    game.startRecording();
+    // game.startRecording();
   }
 
   onSelectEnd() {
     game.isSelecting = false;
-    game.stopRecording();
+    // game.stopRecording();
   }
 
   constructor() {

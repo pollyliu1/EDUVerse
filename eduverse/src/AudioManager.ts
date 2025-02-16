@@ -35,23 +35,25 @@ export async function startRecording() {
   };
 
   mediaRecorder.onstop = () => {
-    const blob = new Blob(recordedChunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "vr-recording-with-audio.webm";
-    a.click();
-    URL.revokeObjectURL(url);
+    if (Date.now() - game.lastRecordingTime < 1000) return;
+
+    const audioBlob = new Blob(recordedChunks, { type: "video/webm" });
+    const url = URL.createObjectURL(audioBlob);
+    // const a = document.createElement("a");
+    // a.href = url;
+    // a.download = "vr-recording-with-audio.webm";
+    // a.click();
+    // URL.revokeObjectURL(url);
 
     // Autoplay the video
-    const videoElement = document.createElement("video");
-    videoElement.src = url;
-    videoElement.controls = true;
-    videoElement.autoplay = true;
-    document.body.appendChild(videoElement);
+    // const videoElement = document.createElement("video");
+    // videoElement.src = url;
+    // videoElement.controls = true;
+    // videoElement.autoplay = true;
+    // document.body.appendChild(videoElement);
 
     // PLAY BACK THE MIC AUDIO
-    const audioUrl = URL.createObjectURL(blob);
+    const audioUrl = URL.createObjectURL(audioBlob);
     const sound = new Howl({
       src: [audioUrl],
       format: ["webm"],
@@ -62,7 +64,17 @@ export async function startRecording() {
     });
 
     // TRANSCRIBES THE AUDIO INTO TEXT
-    Services.uploadAudio(blob);
+
+    const index = 1;
+    const filePath = `images/textbook/complex-numbers-${index}.png`;
+    fetch(filePath)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const file = new File([blob], `complex-numbers-${index}.png`, { type: "image/png" });
+        Services.sendAgentRequest(file, audioBlob);
+      })
+      .then((text) => console.log("Extracted Text:", text))
+      .catch((error) => console.error("Failed to extract text:", error));
   };
 
   mediaRecorder.start();

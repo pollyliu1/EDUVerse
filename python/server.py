@@ -240,8 +240,8 @@ async def agent_flow(
         if "INVALID" in cleaned_audio_transcript:
             # Here, we will say "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
             sorry_response = "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
-            speech_response = generate_speech_audio(sorry_response, play=True)
-            return {"text_response": sorry_response, "speech_response": speech_response}
+            speech_response = generate_speech_audio(sorry_response)
+            return speech_response
     
         agent_prompt = "The following is a user's question about the image. Answer the question based on the image. " \
             "The user's question is: " \

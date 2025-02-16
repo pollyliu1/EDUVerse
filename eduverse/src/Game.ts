@@ -27,6 +27,9 @@ class Game {
     y: 0,
   };
 
+  lastRecordingTime = 0;
+  currentlyRecording = false;
+
   constructor() {
     this.scene = new ThreeScene();
     this.aiLoader = new AILoader(this.scene);
@@ -45,16 +48,18 @@ class Game {
       this.stopRecording();
     });
 
-    getMicrophoneStream();
+    // getMicrophoneStream();
   }
 
   startRecording() {
-    // startRecording().then((recorder) => {
-    //   this.mediaRecorder = recorder;
-    // });
+    this.currentlyRecording = true;
+    startRecording().then((recorder) => {
+      this.mediaRecorder = recorder;
+    });
   }
 
   stopRecording() {
+    this.currentlyRecording = false;
     stopRecording(this.mediaRecorder);
     this.mediaRecorder = null;
   }
@@ -73,6 +78,31 @@ class Game {
   update() {
     this.slideLoader.update();
     // Additional update logic can be added here
+
+    // get the distance between the left and right hand
+    const handPositions = this.getHandPositions();
+    const distance = handPositions.left?.distanceTo(handPositions.right || new THREE.Vector3(0, 0, 0));
+
+    if (!distance) return;
+
+    // if the distance is less than 0.1, then send the image to the AI
+    if (distance < 0.1 && !this.currentlyRecording) {
+      // start recording
+      this.startRecording();
+      this.lastRecordingTime = Date.now();
+    } else if (this.currentlyRecording && distance > 0.1) {
+      this.stopRecording();
+    }
+
+    // // get the distance between the left hand and the microphone
+    // const handPositions = this.getHandPositions();
+    // const distance = handPositions.left?.distanceTo(this.modelLoader.microphone?.position || new THREE.Vector3(0, 0, 0));
+    // console.log(distance);
+
+    // // if the distance is less than 0.1, then send the image to the AI
+    // if (distance && distance < 0.1) {
+    //   this.sendImageToAI();
+    // }
   }
 
   getHandPositions(): HandPosition {
