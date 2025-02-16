@@ -10,6 +10,8 @@ import io
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play, stream
 from fastapi.middleware.cors import CORSMiddleware
+import sys
+
 
 load_dotenv('../.env')
 
@@ -102,7 +104,7 @@ def transcribe_audio(file: UploadFile, provider: str = "groq"):
         audio_bytes = file.file.read() # await?
         audio_file = io.BytesIO(audio_bytes)
         audio_file.name = file.filename
-
+        print(audio_file)
         if provider == "groq":
             transcript = groq_client.audio.transcriptions.create(
                 model="whisper-large-v3-turbo",
@@ -118,6 +120,8 @@ def transcribe_audio(file: UploadFile, provider: str = "groq"):
             )
             return {"transcript": transcript["text"].strip()}
     except Exception as e:
+        # print stack trace sys.exc_info()
+        print(sys.exc_info())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/transcribe")
@@ -125,7 +129,7 @@ async def transcribe(file: UploadFile = File(...), provider: str = "groq"):
     return transcribe_audio(file, provider)
 
 
-def generate_speech_audio(input: str, voice_id: str = "qDazFCguyJ6M5CH0mFuN", stream: bool = True):
+def generate_speech_audio(input: str, voice_id: str = "qDazFCguyJ6M5CH0mFuN", stream: bool = True, do_play: bool = False):
     try:
         if not stream:  # currently only supports streaming
             response = eleven_labs_client.text_to_speech.convert(
@@ -148,13 +152,16 @@ def generate_speech_audio(input: str, voice_id: str = "qDazFCguyJ6M5CH0mFuN", st
                 model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128",
             )
-
+            if do_play:
+                play(audio_stream)
             return StreamingResponse(audio_stream, media_type="audio/mpeg")
     except Exception as e:
+
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate_speech")
 async def generate_speech(request: GenerateSpeechRequest):
+
     audio = generate_speech_audio(request.input, request.voice_id, request.stream)
     return audio
 
@@ -187,7 +194,8 @@ def send_image_message(image_data: bytes, prompt: str = "Describe the content of
     if top_p is not None:
         request_payload["top_p"] = top_p
         
-    return openai_client.chat.completions.create(**request_payload)
+    response = openai_client.chat.completions.create(**request_payload)
+    return response.choices[0].message.content
 
 @app.post("/image-to-text")
 async def image_to_text(
@@ -201,51 +209,50 @@ async def image_to_text(
         image_data = await file.read()
         response = send_image_message(image_data, prompt, max_tokens, temperature, top_p)
         
-        return {"response": response.choices[0].message.content}
+        return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 
 # -------------------------------------- Agent Flow --------------------------------------
-class AgentFlowRequest(BaseModel):
-    image: UploadFile = File(...)
-    audio: UploadFile = File(...)
 
 
 @app.post("/agent-flow")
-async def agent_flow(request: AgentFlowRequest):
-    image_data = await request.image.read()
-    audio_data = await request.audio.read()
+async def agent_flow(
+    image: UploadFile = File(...),
+    audio: UploadFile = File(...)
+):
+    try:
 
-    transcribed_audio = transcribe_audio(audio_data)
-    print(transcribed_audio)
+        image_data = await image.read()
+        transcribed_audio = transcribe_audio(audio, provider="groq")
+        print(transcribed_audio)
 
-    # clean transcribed audio
-    prompt = "The following is transcribed audio. If it is a question or comment that can be answered, " \
-        "clean up the transcription. If it is not a question or comment that can be answered, " \
-        "respond only with: INVALID" \
-        "The transcribed audio is here: " \
-        f"{transcribed_audio}"
+        # clean transcribed audio
+        prompt = "The following is transcribed audio. If it is a question or comment that can be answered, " \
+            "clean up the transcription. If it is not a question or comment that can be answered, " \
+            "respond only with: INVALID" \
+            "The transcribed audio is here: " \
+            f"{transcribed_audio}"
+        
+        cleaned_audio_transcript = send_message(prompt, "openai")
+        print(cleaned_audio_transcript)
+        if "INVALID" in cleaned_audio_transcript:
+            # Here, we will say "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
+            sorry_response = "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
+            speech_response = generate_speech_audio(sorry_response, play=True)
+            return {"text_response": sorry_response, "speech_response": speech_response}
     
-    cleaned_audio = send_message(prompt, "openai")
-    print(cleaned_audio)
-
-    if "INVALID" in cleaned_audio.choices[0].message.content:
-        # Here, we will say "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
-        sorry_response = "I'm sorry, I can't answer that. Feel free to ask me a question about your canvas!"
-        speech_response = generate_speech_audio(sorry_response)
-        return {"text_response": sorry_response, "speech_response": speech_response}
-    
-    agent_prompt = "The following is a user's question about the image. Answer the question based on the image. " \
-        "The user's question is: " \
-        f"{cleaned_audio.choices[0].message.content}" 
-    
-    agent_response = image_to_text(image_data, agent_prompt)
-    print(agent_response)
-
-    # Generate speech response
-    speech_response = generate_speech_audio(agent_response)
-    return {"text_response": agent_response, "speech_response": speech_response}
-    
-    
+        agent_prompt = "The following is a user's question about the image. Answer the question based on the image. " \
+            "The user's question is: " \
+            f"{cleaned_audio_transcript}"
+        
+        agent_response = send_image_message(image_data, agent_prompt)
+        print(agent_response)
+        # Generate speech response
+        speech_response = generate_speech_audio(agent_response, do_play=False)
+        return speech_response # figure out how to return both
+        # return {"text_response": agent_response, "speech_response": speech_response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
