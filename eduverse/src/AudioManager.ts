@@ -14,7 +14,7 @@ export async function getMicrophoneStream() {
 
 export async function startRecording() {
   console.log("start");
-  const videoStream = game.scene.renderer.domElement.captureStream(30); // Capture WebGL output
+  // const videoStream = game.scene.renderer.domElement.captureStream(30); // Capture WebGL output
   const audioStream = await getMicrophoneStream(); // Capture Oculus mic
 
   if (!audioStream) {
@@ -23,9 +23,9 @@ export async function startRecording() {
   }
 
   // Combine video and audio tracks
-  const combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+  // const combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
 
-  const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: "video/webm" });
+  const mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
 
   const recordedChunks = [];
   mediaRecorder.ondataavailable = (event) => {
@@ -37,7 +37,7 @@ export async function startRecording() {
   mediaRecorder.onstop = () => {
     if (Date.now() - game.lastRecordingTime < 1000) return;
 
-    const audioBlob = new Blob(recordedChunks, { type: "video/webm" });
+    const audioBlob = new Blob(recordedChunks, { type: "audio/webm" });
     const url = URL.createObjectURL(audioBlob);
     // const a = document.createElement("a");
     // a.href = url;

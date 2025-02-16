@@ -6,32 +6,22 @@ export default class Services {
   static async sendAgentRequest(image: File, audioBlob: Blob) {
     const formData = new FormData();
     formData.append("image", image);
-    formData.append("audio", audioBlob, "audio.mp3");
+    formData.append("audio", audioBlob, "audio.webm");
 
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/agent-flow", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        responseType: "blob", // Ensure the response is treated as a binary blob
+    // add a header for the content type
+    formData.append("Content-Type", "multipart/form-data");
+
+    fetch("http://127.0.0.1:8000/agent-flow", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Agent response:", data);
+      })
+      .catch((error) => {
+        console.error("Failed to send agent request:", error);
       });
-
-      // Create a URL for the blob and use Howler to play the sound
-      const audioUrl = URL.createObjectURL(response.data);
-      const sound = new Howl({
-        src: [audioUrl],
-        format: ["mp3"],
-        autoplay: true,
-        onend: () => {
-          URL.revokeObjectURL(audioUrl); // Clean up the URL after use
-          console.log("Playback finished and URL revoked.");
-        },
-      });
-
-      console.log("Audio response received and is playing.");
-    } catch (error) {
-      console.error("Failed to send agent request:", error);
-    }
   }
 
   static async getTextFromImage(file: File, prompt: string) {

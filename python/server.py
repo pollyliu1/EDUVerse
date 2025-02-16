@@ -21,6 +21,7 @@ origins = [
     "http://localhost:5173",
     "http://localhost:8080",
     "https://grey-need-permission-disable.trycloudflare.com",
+    "https://asked-literally-lt-mattress.trycloudflare.com/",
 ]
 
 app.add_middleware(
