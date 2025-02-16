@@ -1,12 +1,12 @@
 import ThreeScene from "./ThreeScene";
 
 class Game {
-  constructor() {
-    this.init();
-  }
+  scene = new ThreeScene();
+
+  constructor() {}
 
   init() {
-    ThreeScene.init();
+    this.scene.init();
   }
 }
 

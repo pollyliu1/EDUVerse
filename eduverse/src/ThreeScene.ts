@@ -2,9 +2,11 @@ import * as THREE from "three";
 import { VRButton } from "three/addons/webxr/VRButton.js";
 
 class ThreeScene {
+  loader = new THREE.TextureLoader();
+
   constructor() {}
 
-  static init() {
+  init() {
     const mountRef = document.querySelector(".three-container")! as HTMLElement;
 
     // Scene
@@ -32,34 +34,21 @@ class ThreeScene {
     pointLight.position.set(10, 10, 10);
     scene.add(pointLight);
 
-    // Geometry: A spinning cube
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(0, 0, -10);
-    scene.add(cube);
+    // Load and display image
+    const texture = this.loader.load("images/slides/slide1.png");
+    const geometry = new THREE.PlaneGeometry(5, 3); // Adjust size as needed
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const imagePlane = new THREE.Mesh(geometry, material);
+    imagePlane.position.set(0, 0, -10);
+    scene.add(imagePlane);
 
-    // Animation
-    const animate = () => {
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
+    // Render the scene once
+    renderer.render(scene, camera);
+
+    // animate
+    renderer.setAnimationLoop(() => {
       renderer.render(scene, camera);
-    };
-
-    renderer.setAnimationLoop(animate);
-
-    // Handle resize
-    // const handleResize = () => {
-    //   if (mountRef.current) {
-    //     const width = mountRef.current.clientWidth;
-    //     const height = mountRef.current.clientHeight;
-    //     renderer.setSize(width, height);
-    //     camera.aspect = width / height;
-    //     camera.updateProjectionMatrix();
-    //   }
-    // };
-
-    // window.addEventListener("resize", handleResize);
+    });
   }
 }
 
