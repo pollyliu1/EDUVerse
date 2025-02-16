@@ -24,6 +24,7 @@ import {
 } from "./dragger";
 import { game } from "./main";
 import { loadPDF } from "./pdf";
+import ModelLoader from "./ModelLoader";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -39,18 +40,18 @@ function makeButtonMesh(x, y, z, color) {
 
 const FLOOR_HEIGHT = 0;
 
-class Cube {
+export class Cube {
   static SIZE = 0.15;
-  object: THREE.Mesh;
+  object: THREE.Group | THREE.Mesh;
 
   velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
 
-  constructor(scene: THREE.Scene, world: World) {
-    this.object = new THREE.Mesh(
-      new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE),
-      new THREE.MeshLambertMaterial({ color: 0xffffff })
-    );
+  constructor(scene: THREE.Scene, world: World, object?: THREE.Group | THREE.Mesh, name = "cube") {
+    this.object =
+      object || new THREE.Mesh(new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE), new THREE.MeshLambertMaterial({ color: 0xffffff }));
     scene.add(this.object);
+
+    this.object.name = name;
 
     const entity = world.createEntity();
     entity.addComponent(Intersectable);
@@ -107,6 +108,8 @@ class ThreeScene {
   controllerModelFactory: XRControllerModelFactory;
   handModelFactory: XRHandModelFactory;
 
+  modelLoader: ModelLoader;
+
   world = new World();
   clock = new THREE.Clock();
 
@@ -155,7 +158,7 @@ class ThreeScene {
   }
 
   async init() {
-    const instructionText = createText("This is a WebXR Hands demo, please explore with hands.", 0.04);
+    const instructionText = createText("Welcome to your personal AI teaching assistant", 0.04);
     instructionText.position.set(0, 1.6, -0.6);
     this.scene.add(instructionText);
 
@@ -257,9 +260,6 @@ class ThreeScene {
     directionalLight.shadow.camera.far = 15;
     directionalLight.shadow.camera.near = 5;
 
-    // Create draggable cubes
-    // this.createDraggableCubes();
-
     // setup objects in scene and entities
     const floorGeometry = new THREE.PlaneGeometry(4, 4);
     const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
@@ -345,23 +345,6 @@ class ThreeScene {
     const hand2 = this.renderer.xr.getHand(1);
     this.handPointer2 = new OculusHandPointerModel(hand2, this.controller2);
     this.hand2.add(this.handPointer2);
-  }
-
-  createDraggableCubes() {
-    const cubePositions = [new THREE.Vector3(-1, 0.5, -1), new THREE.Vector3(0, 0.5, -1), new THREE.Vector3(1, 0.5, -1)];
-
-    cubePositions.forEach((position) => {
-      const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-      const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material);
-      cube.position.copy(position);
-      this.scene.add(cube);
-
-      // const entity = world.createEntity();
-      // entity.addComponent(Intersectable);
-      // entity.addComponent(Draggable);
-      // entity.addComponent(Object3D, { object: cube });
-    });
   }
 }
 

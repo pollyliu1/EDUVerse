@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Howl } from "howler";
 
 export default class Services {
   static async getTextFromImage(file: File, prompt: string) {
@@ -20,4 +21,55 @@ export default class Services {
       throw error;
     }
   }
+
+  static uploadAudio(blob: Blob) {
+    const formData = new FormData();
+    formData.append("file", blob, "recording.wav");
+    formData.append("provider", "groq");
+
+    fetch("http://127.0.0.1:8000/transcribe", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Transcript:", data.transcript);
+      })
+      .catch((error) => {
+        console.error("Failed to upload audio:", error);
+      });
+  }
+
+  static async generateSpeech(text: string) {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/generate_speech",
+        { input: text },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "blob", // Ensure the response is treated as a binary blob
+        }
+      );
+
+      // Create a URL for the blob and use Howler to play the sound
+      const audioUrl = URL.createObjectURL(response.data);
+      const sound = new Howl({
+        src: [audioUrl],
+        format: ["mp3"],
+        autoplay: true,
+        onend: () => {
+          URL.revokeObjectURL(audioUrl); // Clean up the URL after use
+          console.log("Playback finished and URL revoked.");
+        },
+      });
+
+      console.log("Speech generated and is playing.");
+    } catch (error) {
+      console.error("Failed to generate speech:", error);
+    }
+  }
 }
+
+globalThis.Services = Services;

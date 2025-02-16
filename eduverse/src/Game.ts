@@ -4,6 +4,7 @@ import SlideLoader from "./SlideLoader";
 import ThreeScene from "./ThreeScene";
 import { getMicrophoneStream, startRecording, stopRecording } from "./AudioManager";
 import Services from "./Services";
+import ModelLoader from "./ModelLoader";
 
 interface HandPosition {
   left: THREE.Vector3 | null;
@@ -14,6 +15,7 @@ class Game {
   scene: ThreeScene;
   aiLoader: AILoader;
   slideLoader: SlideLoader;
+  modelLoader: ModelLoader;
 
   isSelecting = false;
   get isRecording() {
@@ -29,7 +31,7 @@ class Game {
     this.scene = new ThreeScene();
     this.aiLoader = new AILoader(this.scene);
     this.slideLoader = new SlideLoader(this.scene);
-
+    this.modelLoader = new ModelLoader(this.scene);
     document.addEventListener("mousemove", (event) => {
       this.mouse.x = event.clientX;
       this.mouse.y = event.clientY;

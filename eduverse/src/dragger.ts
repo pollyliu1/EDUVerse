@@ -227,6 +227,9 @@ export class RandomizerSystem extends System {
 
     this.queries.randomizable.results.forEach((entity) => {
       const object = entity.getComponent(Object3D).object;
+      if (object.name === "microphone") {
+        return;
+      }
 
       object.material.color.setHex(Math.random() * 0xffffff);
 
