@@ -17,11 +17,13 @@ export default class ModelLoader {
   loadMicrophone() {
     this.loader.load("/gltf/microphone.glb", (gltf) => {
       const microphone = gltf.scene;
-      microphone.scale.multiplyScalar(0.2);
+      microphone.children.forEach((child) => {
+        child.scale.multiplyScalar(0.2);
+      });
       microphone.position.set(0, 1, -1);
       this.microphone = microphone;
 
-      this.scene.cubes.push(new Cube(this.scene.scene, this.scene.world, microphone));
+      this.scene.cubes.push(new Cube(this.scene.scene, this.scene.world, microphone, "microphone"));
     });
   }
 }
