@@ -71,7 +71,6 @@ class Game {
     setInterval(() => {
       this.update();
       this.scene.animate();
-      this.aiLoader.animate();
     }, 1000 / 60);
   }
 

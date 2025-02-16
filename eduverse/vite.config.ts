@@ -11,6 +11,7 @@ export default defineConfig({
       "grey-need-permission-disable.trycloudflare.com",
       "dx-invention-curves-sam.trycloudflare.com",
       "asked-literally-lt-mattress.trycloudflare.com",
+      "el-producing-songs-aaron.trycloudflare.com",
     ],
   },
 });
